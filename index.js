@@ -1,25 +1,78 @@
-var redis = require("redis");
+/**
+ * AppID: wxd8b26f08f2550ad5
+ * AppSecret: 661128d2a1a891c93b661b177a5ad00b
+ * 用户唯一标识 OpenID
+ * https://api.weixin.qq.com/sns/jscode2session?appid=wxd8b26f08f2550ad5&secret=661128d2a1a891c93b661b177a5ad00b&js_code=JSCODE&grant_type=authorization_code
+ * https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wxd8b26f08f2550ad5&secret=661128d2a1a891c93b661b177a5ad00b
+ */
 
-//  client = redis.createClient(6379, 'r-2ze0qr9700vefxsgwc.redis.rds.aliyuncs.com', {detect_buffers: true});  //专有网络
-client = redis.createClient(6379, 'r-2ze0qr9700vefxsgwcpd.redis.rds.aliyuncs.com', { detect_buffers: true });  //公网访问
-client.auth("adminP@ssw0rd", redis.print)
+const express = require('express')
+const axios = require('axios');
+const app = express()
+const AppID = 'wxd8b26f08f2550ad5'
+const AppSecret = '661128d2a1a891c93b661b177a5ad00b'
 
-// 写入数据
-//  client.set("key", "this is base");
-//  client.set("key1", "this is first OK");
-//  client.set("key2", "this is second OK");
-//  // 获取数据，返回String
-client.get("key", function (err, reply) {
-  if (err) { console.log("err:", err) }
-  console.log(reply.toString()); // print `OK`
-});
+app.get("/login", async (req, res) => {
+  try {
+    console.log('login req:', req)
+    const { jsCode, appId } = req.params
+    const wxSessionInfo = await wxLogin()
+    console.log("login wx success:", wxSessionInfo.data)
+    res.send(JSON.stringify(wxSessionInfo.data))
+  } catch (err) {
+    console.log(`Faile to login: ${err}`)
+  }
+})
 
-client.get("key1", function (err, reply) {
-  if (err) { console.log("err:", err) }
-  console.log(reply.toString()); // print `OK`
-});
 
-client.get("key2", function (err, reply) {
-  if (err) { console.log("err:", err) }
-  console.log(reply.toString()); // print `OK`
-});
+async function wxLogin(req) {
+  const { js_code } = req.params
+  return axios.get(`https://api.weixin.qq.com/sns/jscode2session`, {
+    appid: AppID,
+    secret: AppSecret,
+    js_code,
+    grant_type: 'authorization_code'
+  })
+}
+/**
+ * 服务端登录 
+ * @returns Promise
+ */
+async function wxServerLogin() {
+  return axios.get(`https://api.weixin.qq.com/cgi-bin/token`, {
+    params: {
+      grant_type: 'client_credential',
+      appid: 'wxd8b26f08f2550ad5',
+      secret: '661128d2a1a891c93b661b177a5ad00b'
+    }
+  })
+}
+
+
+
+app.listen(3000)
+console.log("service start")
+
+// axios.get(`https://api.weixin.qq.com/cgi-bin/token`, {
+//   params: {
+//     grant_type: 'client_credential',
+//     appid: 'wxd8b26f08f2550ad5',
+//     secret: '661128d2a1a891c93b661b177a5ad00b'
+//   }
+// }).then(res => {
+//   if (res.status !== 200) { console.log(`request error: ${res.status}`) }
+//   if (res.data.errcode) { const { errcode, errmsg } = res.data; throw { errcode, errmsg } }
+//   const { access_token, expires_in } = res.data
+//   console.log("axios-format-data:", { access_token, expires_in })
+// }).catch(err => {
+//   console.log("axios-format-err:", err)
+// })
+
+// axios.get('https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wxd8b26f08f2550ad5&secret=661128d2a1a891c93b661b177a5ad00b')
+//   .then(res => {
+//     if (res.status !== 200) { console.log(`request error: ${res.status}`) }
+//     console.log("data1:", res.data)
+//   })
+//   .catch(err => {
+//     console.log("axios-error:", err)
+//   })

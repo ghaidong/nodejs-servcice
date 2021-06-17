@@ -1,5 +1,5 @@
 /**
- * Redis 数据库读取
+ * Redis 数据库存储读取
  */
 
 const redis = require("redis");
