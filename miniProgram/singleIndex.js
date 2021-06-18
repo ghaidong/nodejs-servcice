@@ -26,7 +26,8 @@ app.post("/login", async (req, res) => {
     console.log("post login req:", req.body)
     const { js_code, appId } = req.body;
     if (!js_code) throw { "msg": "can not get appId!" }
-    const { data, config, status, statusText } = await wxLogin({ js_code })
+    let wxSessionInfo = await wxLogin({ js_code })
+    const { data, config, status, statusText } = wxSessionInfo
     if (status !== 200) throw new Error({ code: status, msg: statusText })
     const { errcode, errmsg } = data
     if (errcode) throw new Error({ code: errcode, msg: errmsg })
@@ -40,7 +41,8 @@ app.get("/login", async (req, res) => {
     console.log('get login req:', req.query)
     const { js_code, appId } = req.query
     if (!js_code) throw { msg: "can not get appId!" }
-    const { data, config, status, statusText } = await wxLogin({ js_code })
+    let wxSessionInfo = await wxLogin({ js_code })
+    const { data, config, status, statusText } = wxSessionInfo
     if (status !== 200) throw new Error({ code: status, msg: statusText })
     const { errcode, errmsg } = data
     if (errcode) throw new Error({ code: errcode, msg: errmsg })
