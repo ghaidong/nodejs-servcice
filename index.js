@@ -7,15 +7,38 @@
  */
 
 const express = require('express')
+const bodyParser = require('body-parser')
 const axios = require('axios');
 const app = express()
 const AppID = 'wxd8b26f08f2550ad5'
 const AppSecret = '661128d2a1a891c93b661b177a5ad00b'
 
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+app.get('/test', function (req, res) {
+  console.log("get request test")
+  res.send('Hello World!')
+})
+
+app.post("/login", async (req, res)=>{
+  try {
+    console.log("post login req:", req.body)
+    const { js_code, appId } = req.body;
+    if (!js_code) throw { "msg":"can not get appId!"}
+    const wxSessionInfo = await wxLogin({ jsCode})
+    console.log("wxSessionInfo:", wxSessionInfo)
+    // res.end(JSON.stringify(req.body))
+  } catch(err){
+    console.log("post login err:", err)
+  }
+})
 app.get("/login", async (req, res) => {
   try {
-    console.log('login req:', req)
-    const { jsCode, appId } = req.params
+    console.log('login req:', req.query)
+    const { js_code, appId } = req.query
+    if(!js_code) throw {msg:"can not get appId!"}
+    return
     const wxSessionInfo = await wxLogin()
     console.log("login wx success:", wxSessionInfo.data)
     res.send(JSON.stringify(wxSessionInfo.data))
@@ -24,9 +47,11 @@ app.get("/login", async (req, res) => {
   }
 })
 
+app.listen(3000)
+console.log("service start")
 
-async function wxLogin(req) {
-  const { js_code } = req.params
+async function wxLogin(params) {
+  const { js_code } = params
   return axios.get(`https://api.weixin.qq.com/sns/jscode2session`, {
     appid: AppID,
     secret: AppSecret,
@@ -48,10 +73,6 @@ async function wxServerLogin() {
   })
 }
 
-
-
-app.listen(3000)
-console.log("service start")
 
 // axios.get(`https://api.weixin.qq.com/cgi-bin/token`, {
 //   params: {
