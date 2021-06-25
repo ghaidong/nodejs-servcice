@@ -19,8 +19,10 @@ const AppSecret = '661128d2a1a891c93b661b177a5ad00b'
  * app express app
  */
 const authRoute = function(app) {
+  console.log("this is authRoute")
   app.get("/test", async(req,res)=>{
-    res.send("Hello login test\nthis is for 3000")
+    console.log("this is router test!")
+    res.send("Hello login test!")
   })
   app.post("/login", async (req, res) => {
     try {

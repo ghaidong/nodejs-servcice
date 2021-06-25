@@ -3,4 +3,3 @@ node_modules
 
 # Ignore built ts files
 yarn.lock
-package-lock.json
